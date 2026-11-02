@@ -1,0 +1,75 @@
+
+# ==================================
+# NODE.JS — FRONTEND AND BACKEND
+# ==================================
+
+node_modules/
+**/node_modules/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ==================================
+# FRONTEND
+# ==================================
+
+frontend/dist/
+frontend/build/
+frontend/.vite/
+
+# ==================================
+# BACKEND
+# ==================================
+
+backend/uploads/
+backend/temp/
+backend/tmp/
+
+# Private uploaded documents
+uploads/
+storage/
+private/
+documents/
+
+# ==================================
+# DATABASE AND BACKUPS
+# ==================================
+
+*.dump
+*.bson
+*.archive
+*.sqlite
+*.db
+
+# ==================================
+# EDITORS AND OPERATING SYSTEM
+# ==================================
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==================================
+# SECURITY AND CERTIFICATES
+# ==================================
+
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
