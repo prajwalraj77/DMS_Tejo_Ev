@@ -15,6 +15,8 @@ import EditSubDealer from "./pages/EditSubDealer.jsx";
 import UserManagement from "./pages/UserManagement.jsx";
 import CreateUser from "./pages/CreateUser.jsx";
 import EditUser from "./pages/EditUser.jsx";
+import EmployeeForm from "./pages/EmployeeForm.jsx";
+import EmployeeDirectory from "./pages/EmployeeDirectory.jsx";
 
 function App() {
   return (
@@ -43,6 +45,8 @@ function App() {
             <Route path="users" element={<UserManagement />} />
             <Route path="users/create" element={<CreateUser />} />
             <Route path="users/:id/edit" element={<EditUser />} />
+            <Route path="employees/create" element={<EmployeeForm />} />
+            <Route path="employees" element={<EmployeeDirectory />} />
 
           </Route>
         </Route>

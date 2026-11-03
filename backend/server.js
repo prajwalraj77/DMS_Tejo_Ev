@@ -16,6 +16,7 @@ import VehicleModelRoutes from "./routes/vehicleModelRoutes.js";
 import BatteryVariant from "./routes/batteryVariantRoutes.js";
 import InventoryItemRoutes from "./routes/inventoryItemRoutes.js";
 import stockInwardRoutes from "./routes/stockInwardRoutes.js";
+import employeeRoutes from "./routes/employeeRoutes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -111,6 +112,7 @@ app.use("/api/vehicle-models", VehicleModelRoutes);
 app.use("/api/battery-variants", BatteryVariant);
 app.use("/api/inventory-items", InventoryItemRoutes);
 app.use("/api/stock-inwards", stockInwardRoutes);
+app.use("/api/employees", employeeRoutes);
 
 // Start server
 const startServer = async () => {
