@@ -12,6 +12,7 @@ import {
   getToday,
   loadLogo,
   money,
+  newPage,
 } from "./pdfCommon.js";
 
 // Salary and compensation details
@@ -214,6 +215,9 @@ export async function generateOfferLetterPDF(employee) {
 
   // Employment conditions
   y = addEmploymentConditions(doc, logo, y);
+
+  // Start performance standards on a fresh page
+  y = newPage(doc, logo);
 
   // Performance standards
   y = addPerformance(doc, logo, y);
