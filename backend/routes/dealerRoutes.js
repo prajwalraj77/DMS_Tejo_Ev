@@ -2,18 +2,16 @@ import express from "express";
 import mongoose from "mongoose";
 import Dealer from "../models/Dealer.js";
 import User from "../models/User.js";
+import Counter from "../models/Counter.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import authorizeRoles from "../middleware/authorizeRoles.js";
 
 
-const generateCityCode = (city) => {
-  const cityCode = city.trim().toUpperCase().slice(0, 3);
-  return cityCode;
-};
 
 const Router = express.Router();
 
-Router.post("/",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
+
+Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
   const session = await mongoose.startSession();
 
   try {
@@ -29,7 +27,11 @@ Router.post("/",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
     } = req.body;
 
     // Check if email already exists
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email?.trim().toLowerCase();
+
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+    });
 
     if (existingUser) {
       return res.status(400).json({
@@ -37,30 +39,36 @@ Router.post("/",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
       });
     }
 
-    // Generate city code
-    const cityCode = generateCityCode(city);
-    const existingDealers = await Dealer.find({
-      dealerCode: { $regex: `^TEJO-${cityCode}-` },
-    });
-
-    const nextNumber = existingDealers.length + 1;
-
-    // Generate dealer code
-    const dealerCode = `TEJO-${cityCode}-${String(nextNumber).padStart(3, "0")}`;
-
     let newDealer;
     let newUser;
 
-    // Start transaction
     await session.withTransaction(async () => {
-      // 1. Create Dealer
+      // Generate the next permanent Dealer sequence
+      const counter = await Counter.findOneAndUpdate(
+        { scope: "DEALER" },
+        { $inc: { sequence: 1 } },
+        {
+          new: true,
+          upsert: true,
+          setDefaultsOnInsert: true,
+          session,
+        },
+      );
+
+      const dealerSequence = counter.sequence;
+
+      // Generate the Dealer code
+      const dealerCode = `TEJO-DEA-${String(dealerSequence).padStart(4, "0")}`;
+
+      // Create Dealer
       const dealerResult = await Dealer.create(
         [
           {
             businessName,
+            dealerSequence,
             dealerCode,
             phone,
-            email,
+            email: normalizedEmail,
             address,
             city,
             state,
@@ -72,12 +80,12 @@ Router.post("/",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
 
       newDealer = dealerResult[0];
 
-      // 2. Create Dealer User
+      // Create linked Dealer User
       const userResult = await User.create(
         [
           {
             name: businessName,
-            email,
+            email: normalizedEmail,
             password,
             role: "DEALER",
             dealerId: newDealer._id,
@@ -89,16 +97,24 @@ Router.post("/",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
       newUser = userResult[0];
     });
 
-    // Don't return password
+    // Exclude password from response
     newUser.password = undefined;
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Dealer and Dealer user created successfully",
       dealer: newDealer,
       user: newUser,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Failed to create Dealer:", error);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        message: "A Dealer with this code or a User with this email already exists",
+      });
+    }
+
+    return res.status(500).json({
       message: "Failed to create Dealer",
       error: error.message,
     });
@@ -106,6 +122,7 @@ Router.post("/",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
     await session.endSession();
   }
 });
+
 
 Router.get("/",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
   try {

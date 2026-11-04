@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const DealerSchema = new mongoose.Schema(
@@ -6,9 +7,17 @@ const DealerSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    dealerSequence: {
+      type: Number,
+      unique: true,
+      sparse: true,
+      min: 1,
+    },
     dealerCode: {
       type: String,
-      
+      required: true,
+      unique: true,
+      trim: true,
     },
     phone: {
       type: String,
@@ -21,7 +30,6 @@ const DealerSchema = new mongoose.Schema(
     address: {
       type: String,
     },
-
     city: {
       type: String,
     },
@@ -42,4 +50,5 @@ const DealerSchema = new mongoose.Schema(
 );
 
 const Dealer = mongoose.model("Dealer", DealerSchema);
+
 export default Dealer;

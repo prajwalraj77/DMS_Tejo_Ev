@@ -21,7 +21,7 @@ import api from "../services/api.js";
 
 const INITIAL_FORM = {
   businessName: "",
-  subDealerCode: "",
+
   phone: "",
   email: "",
   dealerId: "",
@@ -35,6 +35,7 @@ const INITIAL_FORM = {
 function CreateSubDealer() {
   const navigate = useNavigate();
 
+  const [generatedCode, setGeneratedCode] = useState("");
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [dealers, setDealers] = useState([]);
   const [isLoadingDealers, setIsLoadingDealers] = useState(true);
@@ -62,7 +63,7 @@ function CreateSubDealer() {
 
         setApiError(
           error.response?.data?.message ||
-            "Unable to load the dealer list. Please refresh and try again."
+          "Unable to load the dealer list. Please refresh and try again."
         );
       } finally {
         if (isMounted) setIsLoadingDealers(false);
@@ -98,10 +99,6 @@ function CreateSubDealer() {
 
     if (!formData.businessName.trim()) {
       newErrors.businessName = "Business name is required.";
-    }
-
-    if (!formData.subDealerCode.trim()) {
-      newErrors.subDealerCode = "Sub-dealer code is required.";
     }
 
     if (!/^[6-9]\d{9}$/.test(formData.phone.trim())) {
@@ -152,7 +149,7 @@ function CreateSubDealer() {
 
       const payload = {
         businessName: formData.businessName.trim(),
-        subDealerCode: formData.subDealerCode.trim(),
+
         phone: formData.phone.trim(),
         email: formData.email.trim(),
         dealerId: formData.dealerId,
@@ -165,9 +162,12 @@ function CreateSubDealer() {
 
       const response = await api.post("/sub-dealers", payload);
 
+      setGeneratedCode(response.data?.subDealer?.subDealerCode || "");
+
       setSuccessMessage(
         response.data?.message || "Sub-dealer created successfully."
       );
+
 
       setFormData({ ...INITIAL_FORM });
       setErrors({});
@@ -187,7 +187,7 @@ function CreateSubDealer() {
       } else {
         setApiError(
           message ||
-            "Unable to create the sub-dealer. Check your connection and try again."
+          "Unable to create the sub-dealer. Check your connection and try again."
         );
       }
     } finally {
@@ -198,16 +198,16 @@ function CreateSubDealer() {
   const handleReset = () => {
     setFormData({ ...INITIAL_FORM });
     setErrors({});
+    setGeneratedCode("");
     setApiError("");
     setSuccessMessage("");
     setShowPassword(false);
   };
 
   const inputClass = (field) =>
-    `w-full rounded-xl border ${
-      errors[field]
-        ? "border-red-400 focus:border-red-500 focus:ring-red-100"
-        : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-100"
+    `w-full rounded-xl border ${errors[field]
+      ? "border-red-400 focus:border-red-500 focus:ring-red-100"
+      : "border-slate-200 focus:border-emerald-600 focus:ring-emerald-100"
     } bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-50`;
 
   const FieldLabel = ({ children, required }) => (
@@ -268,6 +268,11 @@ function CreateSubDealer() {
             <CheckCircle2 size={20} className="mt-0.5 shrink-0" />
             <div>
               <p className="font-semibold">{successMessage}</p>
+              {generatedCode && (
+                <p className="mt-2 font-semibold">
+                  Generated Sub-Dealer Code: {generatedCode}
+                </p>
+              )}
               <p className="mt-1">
                 The form has been cleared. You can create another sub-dealer or
                 return to the Sub-Dealer Network to verify the record.
@@ -304,25 +309,22 @@ function CreateSubDealer() {
           ].map((step, index) => (
             <div
               key={step.number}
-              className={`flex items-center gap-2 border-b-2 px-3 py-4 sm:gap-3 sm:px-5 ${
-                index === 0
-                  ? "border-emerald-600 bg-emerald-50/50"
-                  : "border-transparent"
-              }`}
+              className={`flex items-center gap-2 border-b-2 px-3 py-4 sm:gap-3 sm:px-5 ${index === 0
+                ? "border-emerald-600 bg-emerald-50/50"
+                : "border-transparent"
+                }`}
             >
               <span
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                  index === 0
-                    ? "bg-emerald-600 text-white"
-                    : "bg-slate-100 text-slate-500"
-                }`}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${index === 0
+                  ? "bg-emerald-600 text-white"
+                  : "bg-slate-100 text-slate-500"
+                  }`}
               >
                 {step.number}
               </span>
               <span
-                className={`text-xs font-semibold sm:text-sm ${
-                  index === 0 ? "text-emerald-800" : "text-slate-500"
-                }`}
+                className={`text-xs font-semibold sm:text-sm ${index === 0 ? "text-emerald-800" : "text-slate-500"
+                  }`}
               >
                 {step.label}
               </span>
@@ -359,18 +361,7 @@ function CreateSubDealer() {
                 <FieldError field="businessName" />
               </div>
 
-              <div>
-                <FieldLabel required>Sub-Dealer Code</FieldLabel>
-                <input
-                  name="subDealerCode"
-                  value={formData.subDealerCode}
-                  onChange={handleChange}
-                  className={inputClass("subDealerCode")}
-                  placeholder="e.g. TEJO-MYS-SD-002"
-                  disabled={isSubmitting}
-                />
-                <FieldError field="subDealerCode" />
-              </div>
+
 
               <div>
                 <FieldLabel required>Parent Dealer</FieldLabel>

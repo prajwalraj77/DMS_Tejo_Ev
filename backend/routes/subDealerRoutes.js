@@ -5,8 +5,10 @@ import User from "../models/User.js";
 import Dealer from "../models/Dealer.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import authorizeRoles from "../middleware/authorizeRoles.js";
+import Counter from "../models/Counter.js";
 
 const Router = express.Router();
+
 
 Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
   const session = await mongoose.startSession();
@@ -14,7 +16,6 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
   try {
     const {
       businessName,
-      subDealerCode,
       phone,
       email,
       address,
@@ -26,10 +27,9 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
     } = req.body;
 
     // 1. Validate required fields
-    if (!businessName || !subDealerCode || !phone || !email || !password) {
+    if (!businessName || !phone || !email || !password) {
       return res.status(400).json({
-        message:
-          "Business name, sub-dealer code, phone, email, and password are required",
+        message: "Business name, phone, email, and password are required",
       });
     }
 
@@ -40,25 +40,10 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
       });
     }
 
-    // 3. Check whether the Dealer exists and is active
-    const dealer = await Dealer.findById(dealerId);
-
-    if (!dealer) {
-      return res.status(404).json({
-        message: "Dealer not found",
-      });
-    }
-
-    if (!dealer.isActive) {
-      return res.status(400).json({
-        message: "Cannot create a Sub-Dealer under an inactive Dealer",
-      });
-    }
-
-    // 4. Normalize and validate email
+    // 3. Normalize email
     const normalizedEmail = email.trim().toLowerCase();
 
-    // 5. Prevent duplicate User emails
+    // 4. Check duplicate email
     const existingUser = await User.findOne({
       email: normalizedEmail,
     });
@@ -69,11 +54,45 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
       });
     }
 
-    // 6. Create both records in one transaction
     let newSubDealer;
     let newUser;
 
+    // 5. Create Sub-Dealer and User in one transaction
     await session.withTransaction(async () => {
+      // Get the parent Dealer inside the transaction
+      const dealer = await Dealer.findById(dealerId).session(session);
+
+      if (!dealer) {
+        throw new Error("DEALER_NOT_FOUND");
+      }
+
+      if (!dealer.isActive) {
+        throw new Error("DEALER_INACTIVE");
+      }
+
+      if (!dealer.dealerSequence) {
+        throw new Error("DEALER_SEQUENCE_NOT_INITIALIZED");
+      }
+
+      // Generate a separate counter for this parent Dealer
+      const counter = await Counter.findOneAndUpdate(
+        { scope: `SUBDEALER:${dealer._id}` },
+        { $inc: { sequence: 1 } },
+        {
+          new: true,
+          upsert: true,
+          setDefaultsOnInsert: true,
+          session,
+        },
+      );
+
+      const subDealerSequence = counter.sequence;
+
+      // Generate Sub-Dealer code
+      const subDealerCode =
+        `TEJO-SUB-${String(dealer.dealerSequence).padStart(4, "0")}-${String(subDealerSequence).padStart(3, "0")}`;
+
+      // Create Sub-Dealer
       const subDealerResult = await SubDealer.create(
         [
           {
@@ -85,7 +104,7 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
             city,
             state,
             pincode,
-            dealerId,
+            dealerId: dealer._id,
           },
         ],
         { session },
@@ -93,6 +112,7 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
 
       newSubDealer = subDealerResult[0];
 
+      // Create linked Sub-Dealer User
       const userResult = await User.create(
         [
           {
@@ -100,7 +120,7 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
             email: normalizedEmail,
             password,
             role: "SUB_DEALER",
-            dealerId,
+            dealerId: dealer._id,
             subDealerId: newSubDealer._id,
           },
         ],
@@ -110,7 +130,7 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
       newUser = userResult[0];
     });
 
-    // 7. Exclude password from the response
+    // 6. Exclude password from response
     const safeUser = await User.findById(newUser._id).select("-password");
 
     return res.status(201).json({
@@ -121,10 +141,27 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
   } catch (error) {
     console.error("Failed to create Sub-Dealer:", error);
 
+    if (error.message === "DEALER_NOT_FOUND") {
+      return res.status(404).json({
+        message: "Dealer not found",
+      });
+    }
+
+    if (error.message === "DEALER_INACTIVE") {
+      return res.status(400).json({
+        message: "Cannot create a Sub-Dealer under an inactive Dealer",
+      });
+    }
+
+    if (error.message === "DEALER_SEQUENCE_NOT_INITIALIZED") {
+      return res.status(400).json({
+        message: "The parent Dealer sequence is not initialized. Please initialize Dealer codes first.",
+      });
+    }
+
     if (error.code === 11000) {
       return res.status(409).json({
-        message:
-          "A Sub-Dealer with this code or a User with this email already exists",
+        message: "A Sub-Dealer with this code or a User with this email already exists",
       });
     }
 
@@ -136,6 +173,7 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
     await session.endSession();
   }
 });
+
 
 Router.get("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
   try {
