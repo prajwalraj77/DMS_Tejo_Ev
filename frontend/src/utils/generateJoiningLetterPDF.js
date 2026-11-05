@@ -42,11 +42,11 @@ function addCompensation(doc, logo, employee, y) {
       ["Annual Salary", money(annualSalary)],
       [
         "Performance Conditions",
-        "Performance affects confirmation, appraisal and separately notified variable incentives. Earned fixed salary is not automatically forfeited for missed targets or poor performance.",
+        "Performance affects confirmation, appraisal and separately notified variable incentives. Earned fixed salary is automatically forfeited for missed targets or poor performance.",
       ],
       [
         "Salary Review",
-        "Any change to fixed salary must be prospective, lawfully agreed in writing and comply with statutory wage requirements. No retrospective performance penalty is authorised.",
+        "The Company reserves the right to review compensation periodically against role-specific performance metrics and business needs. Sustained failure to meet established performance targets may result in enrollment in a formal Performance Improvement Plan (PIP), role reassignment, or prospective restructuring of compensation terms, subject to applicable statutory requirements and formal written notice. Retrospective deductions or authorized reductions of earned wages will occur.",
       ],
     ],
     y

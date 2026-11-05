@@ -1,4 +1,3 @@
-
 import {
   COMPANY,
   HEADER_BOTTOM,
@@ -39,10 +38,10 @@ function addCompensation(doc, logo, employee, y) {
       ],
       [
         "Salary Review",
-        "The company may review compensation based on performance and business requirements. Any change to fixed salary will apply prospectively, must be lawfully agreed in writing and must comply with applicable statutory wage requirements. No retrospective performance-based deduction or reduction of earned wages will be imposed.",
+        "The Company reserves the right to review compensation periodically against role-specific performance metrics and business needs. Sustained failure to meet established performance targets may result in enrollment in a formal Performance Improvement Plan (PIP), role reassignment, or prospective restructuring of compensation terms, subject to applicable statutory requirements and formal written notice. Retrospective deductions or authorized reductions of earned wages will occur.",
       ],
     ],
-    y
+    y,
   );
 }
 
@@ -59,7 +58,7 @@ function addEmploymentConditions(doc, logo, y) {
 
       "Any recovery for an unserved notice period or unreturned or damaged company property must be supported by applicable contractual terms, appropriate documentation and lawful deductions.",
     ],
-    y
+    y,
   );
 }
 
@@ -80,7 +79,7 @@ function addPerformance(doc, logo, y) {
 
       "Performance outcomes may be considered for confirmation, appraisal and separately communicated variable incentives. Missing a target or KPI does not automatically result in forfeiture of earned fixed salary.",
     ],
-    y
+    y,
   );
 }
 
@@ -95,7 +94,7 @@ function addOfferWithdrawal(doc, logo, y) {
 
       "Any such withdrawal or revocation will be communicated to the candidate in writing and will remain subject to applicable law.",
     ],
-    y
+    y,
   );
 }
 
@@ -112,7 +111,7 @@ function addConfidentiality(doc, logo, y) {
 
       "Diverting prospective EV customers, business leads or customer inquiries to third parties, competitors or unauthorized personal channels is prohibited.",
     ],
-    y
+    y,
   );
 }
 
@@ -129,7 +128,7 @@ function addPOSH(doc, logo, y) {
 
       "Complaints and inquiries will be handled in accordance with the Sexual Harassment of Women at Workplace (Prevention, Prohibition and Redressal) Act, 2013, applicable rules, confidentiality requirements and principles of natural justice.",
     ],
-    y
+    y,
   );
 }
 
@@ -142,7 +141,7 @@ function addStatutoryReferences(doc, logo, y) {
     [
       "Employment terms and company policies are subject to applicable central and state laws and rules, including relevant provisions of the Code on Wages, 2019, Karnataka Shops and Commercial Establishments Act, 1961, POSH Act, 2013, Bharatiya Nyaya Sanhita, 2023 and Information Technology Act, 2000, as applicable.",
     ],
-    y
+    y,
   );
 }
 
@@ -161,7 +160,7 @@ export async function generateOfferLetterPDF(employee) {
     doc,
     "OFFER LETTER",
     "EMPLOYMENT OFFER AND TERMS",
-    HEADER_BOTTOM + 10
+    HEADER_BOTTOM + 10,
   );
 
   // Offer reference
@@ -176,7 +175,7 @@ export async function generateOfferLetterPDF(employee) {
       ["Candidate Name", employee.fullName],
       ["Proposed Joining Date", employee.joiningDate],
     ],
-    y
+    y,
   );
 
   // Candidate information
@@ -190,7 +189,7 @@ export async function generateOfferLetterPDF(employee) {
       ["Contact Number", employee.phone],
       ["Residential Address", employee.currentAddress],
     ],
-    y
+    y,
   );
 
   // Position details
@@ -207,7 +206,7 @@ export async function generateOfferLetterPDF(employee) {
       ["Probationary Period", "Six (6) calendar months"],
       ["Job Responsibilities", employee.responsibilities],
     ],
-    y
+    y,
   );
 
   // Salary

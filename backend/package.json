@@ -19,6 +19,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.9",
     "mongodb": "^7.6.0",
+    "mongoose": "^9.11.4",
     "socket.io": "^4.8.4"
   },
   "devDependencies": {
