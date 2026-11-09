@@ -84,7 +84,13 @@ const VehicleSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["NOT_ALLOCATED", "ALLOCATED", "SOLD"],
+      enum: [
+        "NOT_ALLOCATED",
+        "PENDING_DEALER_ACCEPTANCE",
+        "ALLOCATED",
+        "SOLD",
+        "DELIVERED",
+      ],
       default: "NOT_ALLOCATED",
     },
   },

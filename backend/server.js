@@ -17,6 +17,11 @@ import BatteryVariant from "./routes/batteryVariantRoutes.js";
 import InventoryItemRoutes from "./routes/inventoryItemRoutes.js";
 import stockInwardRoutes from "./routes/stockInwardRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
+import CustomerRoutes from "./routes/customerRoutes.js";
+import PaymentRoutes from "./routes/paymentRoutes.js";
+import VehicleDeliveryRoutes from "./routes/vehicleDeliveryRoutes.js";
+import DashboardRoutes from "./routes/dashboardRoutes.js";
+import ReportRoutes from "./routes/reportRoutes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -113,6 +118,12 @@ app.use("/api/battery-variants", BatteryVariant);
 app.use("/api/inventory-items", InventoryItemRoutes);
 app.use("/api/stock-inwards", stockInwardRoutes);
 app.use("/api/employees", employeeRoutes);
+app.use("/api/customers", CustomerRoutes);
+app.use("/api/sale-invoices", PaymentRoutes);
+app.use("/api/vehicle-deliveries", VehicleDeliveryRoutes);
+app.use("/api/dashboard", DashboardRoutes);
+app.use("/api/reports", ReportRoutes);
+
 
 // Start server
 const startServer = async () => {
