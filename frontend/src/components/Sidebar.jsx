@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutGrid,
   ReceiptText,
+  BarChart3,
   Truck,
   UsersRound,
   Package,
@@ -121,6 +122,27 @@ function Sidebar() {
             }
           />
           <span>Vehicle Delivery</span>
+        </Link>
+
+        {/* Reports */}
+        <Link
+          to="/dashboard/reports"
+          className={`group mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
+            isActive("/dashboard/reports")
+              ? "bg-[#b8f34a] font-semibold text-[#111615]"
+              : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+          }`}
+        >
+          <BarChart3
+            size={17}
+            strokeWidth={1.7}
+            className={
+              isActive("/dashboard/reports")
+                ? "text-[#111615]"
+                : "text-white/40 group-hover:text-[#b8f34a]"
+            }
+          />
+          <span>Reports</span>
         </Link>
 
         {/* Dealers */}

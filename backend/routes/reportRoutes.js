@@ -181,8 +181,10 @@ Router.get("/sales", authMiddleware, async (req, res) => {
       )
       .populate(
         "vehicleId",
-        "registrationNumber chassisNumber motorNumber batteryNumber model variant color status",
+        "chassisNumber motorNumber batteryNumber model batteryVariant colour status",
       )
+      .populate("vehicleId.model", "name")
+      .populate("vehicleId.batteryVariant", "name")
       .sort({ createdAt: -1 });
 
     /* --------------------------------------------------------
@@ -463,8 +465,10 @@ Router.get("/deliveries", authMiddleware, async (req, res) => {
       )
       .populate(
         "vehicleId",
-        "registrationNumber chassisNumber motorNumber batteryNumber model variant color status",
+        "chassisNumber motorNumber batteryNumber model batteryVariant colour status",
       )
+      .populate("vehicleId.model", "name")
+      .populate("vehicleId.batteryVariant", "name")
       .populate(
         "invoiceId",
         "invoiceNumber sellingPrice discountAmount gstAmount totalAmount paidAmount paymentStatus",
