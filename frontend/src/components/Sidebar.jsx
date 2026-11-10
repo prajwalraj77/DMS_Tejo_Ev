@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutGrid,
   ReceiptText,
+  Truck,
   UsersRound,
   Package,
   Upload,
@@ -99,6 +100,27 @@ function Sidebar() {
             }
           />
           <span>Sales & Billing</span>
+        </Link>
+
+        {/* Delivery */}
+        <Link
+          to="/dashboard/delivery"
+          className={`group mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
+            isActive("/dashboard/delivery")
+              ? "bg-[#b8f34a] font-semibold text-[#111615]"
+              : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+          }`}
+        >
+          <Truck
+            size={17}
+            strokeWidth={1.7}
+            className={
+              isActive("/dashboard/delivery")
+                ? "text-[#111615]"
+                : "text-white/40 group-hover:text-[#b8f34a]"
+            }
+          />
+          <span>Vehicle Delivery</span>
         </Link>
 
         {/* Dealers */}
