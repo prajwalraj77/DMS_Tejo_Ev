@@ -19,8 +19,7 @@ import EmployeeForm from "./pages/EmployeeForm.jsx";
 import EmployeeDirectory from "./pages/EmployeeDirectory.jsx";
 import Billing from "./pages/Billing.jsx";
 import Delivery from "./pages/Delivery.jsx";
-import Delivery from "./pages/Delivery.jsx";
-import Delivery from "./pages/Delivery.jsx";
+import Reports from "./pages/Reports.jsx";
 
 function App() {
   return (
@@ -53,8 +52,7 @@ function App() {
             <Route path="employees" element={<EmployeeDirectory />} />
             <Route path="billing" element={<Billing />} />
             <Route path="delivery" element={<Delivery />} />
-            <Route path="delivery" element={<Delivery />} />
-            <Route path="delivery" element={<Delivery />} />
+            <Route path="reports" element={<Reports />} />
 
           </Route>
         </Route>
