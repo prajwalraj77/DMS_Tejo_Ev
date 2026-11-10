@@ -17,6 +17,7 @@ import CreateUser from "./pages/CreateUser.jsx";
 import EditUser from "./pages/EditUser.jsx";
 import EmployeeForm from "./pages/EmployeeForm.jsx";
 import EmployeeDirectory from "./pages/EmployeeDirectory.jsx";
+import Billing from "./pages/Billing.jsx";
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
             <Route path="users/:id/edit" element={<EditUser />} />
             <Route path="employees/create" element={<EmployeeForm />} />
             <Route path="employees" element={<EmployeeDirectory />} />
+            <Route path="billing" element={<Billing />} />
 
           </Route>
         </Route>
