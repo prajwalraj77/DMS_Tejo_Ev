@@ -12,6 +12,7 @@ import {
   X,
   AlertCircle,
   CheckCircle2,
+  HandCoins,
 } from "lucide-react";
 import api from "../services/api.js";
 
@@ -40,6 +41,10 @@ function Billing() {
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [pdfLoadingId, setPdfLoadingId] = useState(null);
+  const [paymentInvoice, setPaymentInvoice] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("UPI");
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -234,6 +239,92 @@ function Billing() {
     setForm(initialForm);
   };
 
+  const openPayment = (invoice) => {
+    setError("");
+    setNotice("");
+    setPaymentInvoice(invoice);
+    setPaymentAmount(
+      Math.max(
+        0,
+        Number(invoice.totalAmount || 0) -
+          Number(invoice.paidAmount || 0),
+      ).toFixed(2),
+    );
+    setPaymentMethod(invoice.paymentMethod || "UPI");
+  };
+
+  const closePayment = () => {
+    if (paymentLoading) return;
+    setPaymentInvoice(null);
+    setPaymentAmount("");
+    setPaymentMethod("UPI");
+  };
+
+  const handleCollectPayment = async (event) => {
+    event.preventDefault();
+
+    if (!paymentInvoice) return;
+
+    const amount = Number(paymentAmount || 0);
+    const outstanding = Math.max(
+      0,
+      Number(paymentInvoice.totalAmount || 0) -
+        Number(paymentInvoice.paidAmount || 0),
+    );
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Payment amount must be greater than ₹0.");
+      return;
+    }
+
+    if (amount > outstanding) {
+      setError(
+        "Payment amount cannot be greater than the outstanding balance.",
+      );
+      return;
+    }
+
+    setPaymentLoading(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const response = await api.patch(
+        "/sale-invoices/" + paymentInvoice._id + "/payment",
+        {
+          amount,
+          paymentMethod,
+        },
+      );
+
+      const updatedInvoice = response.data?.invoice;
+
+      if (updatedInvoice) {
+        setInvoices((previous) =>
+          previous.map((invoice) =>
+            invoice._id === updatedInvoice._id
+              ? updatedInvoice
+              : invoice,
+          ),
+        );
+      }
+
+      setNotice(
+        response.data?.message || "Payment recorded successfully.",
+      );
+      closePayment();
+      fetchData();
+    } catch (err) {
+      console.error("Failed to collect payment:", err);
+      setError(
+        err.response?.data?.message ||
+          "Unable to collect payment. Please try again.",
+      );
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-7 pb-10">
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
@@ -375,6 +466,7 @@ function Billing() {
                   <th className="px-5 py-4">Paid</th>
                   <th className="px-5 py-4">Outstanding</th>
                   <th className="px-5 py-4">Status</th>
+                  <th className="px-5 py-4">Payment</th>
                   <th className="px-5 py-4">PDF</th>
                 </tr>
               </thead>
@@ -458,6 +550,23 @@ function Billing() {
                       </td>
 
                       <td className="px-5 py-4">
+                        {invoice.paymentStatus === "PAID" ? (
+                          <span className="text-xs font-semibold text-emerald-700">
+                            Fully Paid
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => openPayment(invoice)}
+                            className="inline-flex items-center gap-2 rounded-lg bg-[#111615] px-3 py-2 text-xs font-semibold text-white hover:bg-black"
+                          >
+                            <HandCoins size={14} />
+                            Collect Payment
+                          </button>
+                        )}
+                      </td>
+
+                      <td className="px-5 py-4">
                         <button
                           type="button"
                           onClick={() =>
@@ -485,6 +594,129 @@ function Billing() {
           </div>
         )}
       </div>
+
+      {paymentInvoice && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-black/[0.06] px-6 py-5">
+              <div>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8fca32]">
+                  Payment Collection
+                </p>
+                <h2 className="text-xl font-bold text-[#111615]">
+                  {paymentInvoice.invoiceNumber}
+                </h2>
+                <p className="mt-1 text-xs text-black/40">
+                  {paymentInvoice.customerId?.name || "Customer"} ·{" "}
+                  {paymentInvoice.customerId?.phone || "—"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closePayment}
+                disabled={paymentLoading}
+                className="rounded-lg p-2 text-black/40 hover:bg-black/[0.04]"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCollectPayment} className="space-y-5 p-6">
+              <div className="grid grid-cols-3 gap-3">
+                <BalanceCard
+                  label="Invoice Total"
+                  value={money(paymentInvoice.totalAmount)}
+                />
+                <BalanceCard
+                  label="Already Paid"
+                  value={money(paymentInvoice.paidAmount)}
+                />
+                <BalanceCard
+                  label="Outstanding"
+                  value={money(
+                    Math.max(
+                      0,
+                      Number(paymentInvoice.totalAmount || 0) -
+                        Number(paymentInvoice.paidAmount || 0),
+                    ),
+                  )}
+                />
+              </div>
+
+              <Field label="Payment Amount (₹)" required>
+                <input
+                  type="number"
+                  min="0.01"
+                  max={Math.max(
+                    0,
+                    Number(paymentInvoice.totalAmount || 0) -
+                      Number(paymentInvoice.paidAmount || 0),
+                  )}
+                  step="0.01"
+                  value={paymentAmount}
+                  onChange={(event) => setPaymentAmount(event.target.value)}
+                  required
+                  className={inputClass}
+                  placeholder="Enter amount received"
+                />
+              </Field>
+
+              <Field label="Payment Method" required>
+                <select
+                  value={paymentMethod}
+                  onChange={(event) => setPaymentMethod(event.target.value)}
+                  required
+                  className={inputClass}
+                >
+                  <option value="CASH">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                  <option value="CARD">Card</option>
+                  <option value="CHEQUE">Cheque</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </Field>
+
+              <div className="rounded-xl border border-[#b8f34a]/40 bg-[#b8f34a]/10 p-4 text-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-black/55">Remaining after payment</span>
+                  <span className="font-bold text-[#111615]">
+                    {money(
+                      Math.max(
+                        0,
+                        Number(paymentInvoice.totalAmount || 0) -
+                          Number(paymentInvoice.paidAmount || 0) -
+                          Number(paymentAmount || 0),
+                      ),
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={closePayment}
+                  disabled={paymentLoading}
+                  className="rounded-xl border border-black/10 px-5 py-2.5 text-sm font-semibold text-[#111615] hover:bg-black/[0.03]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={paymentLoading || !paymentAmount}
+                  className="flex items-center gap-2 rounded-xl bg-[#111615] px-5 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {paymentLoading && (
+                    <RefreshCw size={15} className="animate-spin" />
+                  )}
+                  {paymentLoading ? "Recording..." : "Record Payment"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -714,6 +946,17 @@ function Billing() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function BalanceCard({ label, value }) {
+  return (
+    <div className="rounded-xl bg-[#f8f9f6] p-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-black/35">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-bold text-[#111615]">{value}</p>
     </div>
   );
 }
