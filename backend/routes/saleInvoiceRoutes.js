@@ -8,6 +8,9 @@ import Dealer from "../models/Dealer.js";
 import Customer from "../models/Customer.js";
 import Vehicle from "../models/Vehicle.js";
 import Counter from "../models/Counter.js";
+import VehicleModel from "../models/VehicleModel.js";
+import BatteryVariant from "../models/BatteryVariant.js";
+import { generateSaleInvoicePdf } from "../services/saleInvoicePdf.js";
 
 const Router = express.Router();
 
@@ -358,7 +361,13 @@ Router.post("/", authMiddleware, async (req, res) => {
     const populatedInvoice = await SaleInvoice.findById(saleInvoice._id)
       .populate("dealerId")
       .populate("customerId")
-      .populate("vehicleId");
+      .populate({
+        path: "vehicleId",
+        populate: [
+          { path: "model", model: VehicleModel },
+          { path: "batteryVariant", model: BatteryVariant },
+        ],
+      });
 
     return res.status(201).json({
       success: true,
@@ -587,7 +596,13 @@ Router.get("/:id", authMiddleware, async (req, res) => {
     })
       .populate("dealerId")
       .populate("customerId")
-      .populate("vehicleId");
+      .populate({
+        path: "vehicleId",
+        populate: [
+          { path: "model", model: VehicleModel },
+          { path: "batteryVariant", model: BatteryVariant },
+        ],
+      });
 
     if (!invoice) {
       return res.status(404).json({
@@ -609,16 +624,13 @@ Router.get("/:id", authMiddleware, async (req, res) => {
 });
 
 // ======================================================
-// GET PRINTABLE SALE INVOICE DATA
+// ======================================================
+// GET PRINTABLE SALE INVOICE DATA / PDF
 // GET /api/sale-invoices/:id/print
 // ======================================================
 
 Router.get("/:id/print", authMiddleware, async (req, res) => {
   try {
-    // --------------------------------------------------
-    // Only Dealers can view printable sale invoices
-    // --------------------------------------------------
-
     if (req.user.role !== "DEALER") {
       return res.status(403).json({
         message: "Only dealers can print sale invoices.",
@@ -634,28 +646,25 @@ Router.get("/:id/print", authMiddleware, async (req, res) => {
       });
     }
 
-    // --------------------------------------------------
-    // Validate invoice ID
-    // --------------------------------------------------
-
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
         message: "Invalid sale invoice ID.",
       });
     }
 
-    // --------------------------------------------------
-    // Find invoice using invoice ID + dealer ID
-    // This prevents cross-dealer access.
-    // --------------------------------------------------
-
     const invoice = await SaleInvoice.findOne({
       _id: id,
-      dealerId: dealerId,
+      dealerId,
     })
       .populate("dealerId")
       .populate("customerId")
-      .populate("vehicleId");
+      .populate({
+        path: "vehicleId",
+        populate: [
+          { path: "model", model: VehicleModel },
+          { path: "batteryVariant", model: BatteryVariant },
+        ],
+      });
 
     if (!invoice) {
       return res.status(404).json({
@@ -663,93 +672,56 @@ Router.get("/:id/print", authMiddleware, async (req, res) => {
       });
     }
 
-    // --------------------------------------------------
-    // Calculate balance amount
-    // --------------------------------------------------
+    if (req.query.format === "json") {
+      const balanceAmount = Number(
+        (invoice.totalAmount - invoice.paidAmount).toFixed(2),
+      );
 
-    const balanceAmount = Number(
-      (invoice.totalAmount - invoice.paidAmount).toFixed(2),
+      return res.status(200).json({
+        success: true,
+        invoice: {
+          invoiceNumber: invoice.invoiceNumber,
+          invoiceDate: invoice.createdAt,
+          dealer: invoice.dealerId,
+          customer: invoice.customerId,
+          vehicle: invoice.vehicleId,
+          pricing: {
+            sellingPrice: invoice.sellingPrice,
+            discountType: invoice.discountType,
+            discountValue: invoice.discountValue,
+            discountAmount: invoice.discountAmount,
+            taxableAmount: invoice.taxableAmount,
+            gstRate: invoice.gstRate,
+            gstTreatment: invoice.gstTreatment,
+            gstAmount: invoice.gstAmount,
+            totalAmount: invoice.totalAmount,
+          },
+          payment: {
+            paymentStatus: invoice.paymentStatus,
+            paymentMethod: invoice.paymentMethod,
+            paidAmount: invoice.paidAmount,
+            balanceAmount,
+          },
+          status: invoice.status,
+        },
+      });
+    }
+
+    const pdfBuffer = generateSaleInvoicePdf(invoice);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${invoice.invoiceNumber}.pdf"`,
     );
+    res.setHeader("Content-Length", pdfBuffer.length);
 
-    // --------------------------------------------------
-    // Return clean printable invoice structure
-    // --------------------------------------------------
-
-    return res.status(200).json({
-      success: true,
-
-      invoice: {
-        invoiceNumber: invoice.invoiceNumber,
-        invoiceDate: invoice.createdAt,
-
-        dealer: {
-          id: invoice.dealerId?._id,
-          businessName: invoice.dealerId?.businessName,
-          phone: invoice.dealerId?.phone,
-          email: invoice.dealerId?.email,
-          address: invoice.dealerId?.address,
-          city: invoice.dealerId?.city,
-          state: invoice.dealerId?.state,
-          pincode: invoice.dealerId?.pincode,
-        },
-
-        customer: {
-          id: invoice.customerId?._id,
-          name: invoice.customerId?.name,
-          phone: invoice.customerId?.phone,
-          email: invoice.customerId?.email,
-          address: invoice.customerId?.address,
-          city: invoice.customerId?.city,
-          state: invoice.customerId?.state,
-          pincode: invoice.customerId?.pincode,
-          gstin: invoice.customerId?.gstin,
-        },
-
-        vehicle: {
-          id: invoice.vehicleId?._id,
-          registrationNumber:
-            invoice.vehicleId?.registrationNumber,
-          chassisNumber:
-            invoice.vehicleId?.chassisNumber,
-          motorNumber:
-            invoice.vehicleId?.motorNumber,
-          batteryNumber:
-            invoice.vehicleId?.batteryNumber,
-          model: invoice.vehicleId?.model,
-          variant: invoice.vehicleId?.variant,
-          color: invoice.vehicleId?.color,
-        },
-
-        pricing: {
-          sellingPrice: invoice.sellingPrice,
-          discountType: invoice.discountType,
-          discountValue: invoice.discountValue,
-          discountAmount: invoice.discountAmount,
-          taxableAmount: invoice.taxableAmount,
-          gstRate: invoice.gstRate,
-          gstTreatment: invoice.gstTreatment,
-          gstAmount: invoice.gstAmount,
-          totalAmount: invoice.totalAmount,
-        },
-
-        payment: {
-          paymentStatus: invoice.paymentStatus,
-          paymentMethod: invoice.paymentMethod,
-          paidAmount: invoice.paidAmount,
-          balanceAmount,
-        },
-
-        status: invoice.status,
-      },
-    });
+    return res.status(200).send(pdfBuffer);
   } catch (error) {
-    console.error(
-      "Error fetching printable sale invoice:",
-      error,
-    );
+    console.error("Error generating sale invoice PDF:", error);
 
     return res.status(500).json({
-      message: "Failed to fetch printable sale invoice.",
+      message: "Failed to generate sale invoice PDF.",
     });
   }
 });
