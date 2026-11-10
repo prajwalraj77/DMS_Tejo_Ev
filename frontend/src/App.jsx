@@ -18,6 +18,7 @@ import EditUser from "./pages/EditUser.jsx";
 import EmployeeForm from "./pages/EmployeeForm.jsx";
 import EmployeeDirectory from "./pages/EmployeeDirectory.jsx";
 import Billing from "./pages/Billing.jsx";
+import Delivery from "./pages/Delivery.jsx";
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
             <Route path="employees/create" element={<EmployeeForm />} />
             <Route path="employees" element={<EmployeeDirectory />} />
             <Route path="billing" element={<Billing />} />
+            <Route path="delivery" element={<Delivery />} />
 
           </Route>
         </Route>
