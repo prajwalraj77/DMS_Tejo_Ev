@@ -81,13 +81,25 @@ function Sidebar() {
         </Link>
 
         {/* Sales */}
-        <div className="mb-1 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-white/55 transition hover:bg-white/[0.04] hover:text-white">
-          <ReceiptText size={17} strokeWidth={1.7} />
-
+        <Link
+          to="/dashboard/billing"
+          className={`group mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
+            isActive("/dashboard/billing")
+              ? "bg-[#b8f34a] font-semibold text-[#111615]"
+              : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+          }`}
+        >
+          <ReceiptText
+            size={17}
+            strokeWidth={1.7}
+            className={
+              isActive("/dashboard/billing")
+                ? "text-[#111615]"
+                : "text-white/40 group-hover:text-[#b8f34a]"
+            }
+          />
           <span>Sales & Billing</span>
-
-          <ChevronRight size={14} className="ml-auto text-white/25" />
-        </div>
+        </Link>
 
         {/* Dealers */}
         <div className="mt-6">
