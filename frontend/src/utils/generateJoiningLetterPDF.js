@@ -1,4 +1,3 @@
-
 import {
   COMPANY,
   HEADER_BOTTOM,
@@ -376,18 +375,54 @@ function addApplicationAndRights(doc, logo, y) {
 }
 
 // --------------------------------------------------
-// 16. EMPLOYEE ACKNOWLEDGEMENT AND SIGNATURE
+// 16. EMPLOYMENT TERMS & WORKPLACE CONDUCT POLICY
+// --------------------------------------------------
+
+function addEmploymentTermsAndPolicy(doc, logo, y) {
+  return addClause(
+    doc,
+    logo,
+    "EMPLOYMENT TERMS & WORKPLACE CONDUCT POLICY",
+    [
+      "1. PROBATION & PERFORMANCE EVALUATION",
+
+      "All new hires are subject to an initial probation period of six (6) calendar months from their date of joining. During this period, the company will evaluate the employee’s work performance, conduct, and overall suitability for the role. Confirmation of permanent employment is subject to satisfactory completion of the probation period.",
+
+      "2. PRODUCT KNOWLEDGE & ASSESSMENT",
+
+      "Employees are required to acquire and maintain thorough product knowledge relevant to their role. If an employee fails to demonstrate adequate product knowledge through testing or any other formal assessment, the company reserves the right to terminate their employment immediately without further salary payout.",
+
+      "3. CONFIDENTIALITY & PERSONAL INFORMATION",
+
+      "Employees must maintain strict workplace confidentiality at all times. Sharing personal details—whether their own (such as salary/compensation, personal contact details, or banking information) or sensitive data belonging to customers, clients, or fellow employees—with other staff members or unauthorized parties is strictly prohibited. Violation of this policy may result in disciplinary action, up to and including immediate termination.",
+      
+      "4. COMPANY ASSETS & PROPERTY",
+
+      "Any company property issued to the employee—including laptops, mobile devices, SIM cards, ID cards, documents, or software credentials—remains the sole property of the company and must be used strictly for official business purposes. Upon resignation or termination, all company assets must be returned immediately in good working condition. The company reserves the right to deduct the cost of any unreturned or damaged property from the employee’s final settlement.",
+
+      "5. NOTICE PERIOD & TERMINATION",
+
+      "During the probation period, either party may terminate employment by providing seven (7) days' written notice (or salary in lieu of notice).",
+
+      "Upon confirmation, either party must provide thirty (30) days' written notice to terminate employment.",
+
+      "Notwithstanding the above, the company reserves the right to terminate employment immediately without notice or further remuneration in cases of gross misconduct, breach of confidentiality, policy violation, or failure to pass mandatory product knowledge assessments.",
+    ],
+    y
+  );
+}
+
+// --------------------------------------------------
+// 17. EMPLOYEE ACKNOWLEDGEMENT AND SIGNATURE
 // --------------------------------------------------
 
 function addJoiningAcknowledgement(doc, logo, employee, y) {
   y = addClause(
     doc,
     logo,
-    "EMPLOYEE JOINING ACKNOWLEDGEMENT",
+    "EMPLOYEE ACKNOWLEDGMENT",
     [
-      `I, ${value(employee.fullName)} (Employee ID ${value(employee.employeeId)}), acknowledge joining NV EV TECH PRIVATE LIMITED as ${value(employee.designation)} on ${value(employee.joiningDate)}.`,
-
-      "I confirm my personal details and acknowledge these revised service terms. I have had an opportunity to seek clarification and an explanation in a language I understand. My acknowledgement is not an admission of misconduct or consent to unlawful deductions.",
+      "I acknowledge that I have read, understood, and agree to abide by all the terms and conditions outlined in this Employment Terms & Workplace Conduct Policy.",
     ],
     y
   );
@@ -397,6 +432,35 @@ function addJoiningAcknowledgement(doc, logo, employee, y) {
     drawHeader(doc, logo);
     y = HEADER_BOTTOM + 10;
   }
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...C.black);
+
+  // Employee acknowledgement details
+
+  doc.text("Employee Name:", MARGIN, y);
+  doc.text(value(employee.fullName), MARGIN + 32, y);
+
+  y += 8;
+
+  doc.text("Designation:", MARGIN, y);
+  doc.text(value(employee.designation), MARGIN + 32, y);
+
+  y += 8;
+
+  doc.text("Signature:", MARGIN, y);
+
+  y += 15;
+
+  doc.setDrawColor(...C.grey);
+  doc.line(MARGIN + 32, y, MARGIN + 105, y);
+
+  y += 12;
+
+  // --------------------------------------------------
+  // FINAL COMPANY / EMPLOYEE SIGNATURE BLOCK
+  // --------------------------------------------------
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
@@ -425,25 +489,58 @@ function addJoiningAcknowledgement(doc, logo, employee, y) {
   y += 15;
 
   doc.setDrawColor(...C.grey);
+
+  // Company signature line
   doc.line(MARGIN, y, MARGIN + 65, y);
+
+  // Employee signature line
   doc.line(112, y, 177, y);
 
   y += 6;
 
   doc.setFontSize(7.5);
-  doc.text("Authorized Signatory Signature / Company Seal", MARGIN, y);
-  doc.text("Employee Signature", 112, y);
+
+  doc.text(
+    "Authorized Signatory Signature / Company Seal",
+    MARGIN,
+    y
+  );
+
+  doc.text(
+    "Employee Signature",
+    112,
+    y
+  );
 
   y += 12;
 
   doc.setFontSize(8);
-  doc.text("Date: ____________________", MARGIN, y);
-  doc.text("Date: ____________________", 112, y);
+
+  doc.text(
+    "Date: ____________________",
+    MARGIN,
+    y
+  );
+
+  doc.text(
+    "Date: ____________________",
+    112,
+    y
+  );
 
   y += 7;
 
-  doc.text("Place: Bengaluru", MARGIN, y);
-  doc.text("Place: Bengaluru", 112, y);
+  doc.text(
+    "Place: Bengaluru",
+    MARGIN,
+    y
+  );
+
+  doc.text(
+    "Place: Bengaluru",
+    112,
+    y
+  );
 
   return y;
 }
@@ -469,7 +566,10 @@ export async function generateJoiningLetterPDF(employee) {
     HEADER_BOTTOM + 10
   );
 
-  // Joining reference
+  // --------------------------------------------------
+  // JOINING REFERENCE
+  // --------------------------------------------------
+
   y = addSection(
     doc,
     logo,
@@ -484,7 +584,10 @@ export async function generateJoiningLetterPDF(employee) {
     y
   );
 
-  // Employee information
+  // --------------------------------------------------
+  // EMPLOYEE INFORMATION
+  // --------------------------------------------------
+
   y = addSection(
     doc,
     logo,
@@ -503,7 +606,10 @@ export async function generateJoiningLetterPDF(employee) {
     y
   );
 
-  // Joining particulars
+  // --------------------------------------------------
+  // JOINING PARTICULARS
+  // --------------------------------------------------
+
   y = addSection(
     doc,
     logo,
@@ -521,10 +627,16 @@ export async function generateJoiningLetterPDF(employee) {
     y
   );
 
-  // Salary
+  // --------------------------------------------------
+  // SALARY
+  // --------------------------------------------------
+
   y = addCompensation(doc, logo, employee, y);
 
-  // All 15 clauses
+  // --------------------------------------------------
+  // EXISTING JOINING LETTER TERMS
+  // --------------------------------------------------
+
   y = addProbationAndPerformance(doc, logo, y);
   y = addProductTraining(doc, logo, y);
   y = addWorkingHours(doc, logo, y);
@@ -540,10 +652,22 @@ export async function generateJoiningLetterPDF(employee) {
   y = addRecoveryProcedure(doc, logo, y);
   y = addApplicationAndRights(doc, logo, y);
 
-  // Final acknowledgement and signatures
+  // --------------------------------------------------
+  // NEW EMPLOYMENT TERMS & WORKPLACE CONDUCT POLICY
+  // --------------------------------------------------
+
+  y = addEmploymentTermsAndPolicy(doc, logo, y);
+
+  // --------------------------------------------------
+  // FINAL EMPLOYEE ACKNOWLEDGEMENT + SIGNATURES
+  // --------------------------------------------------
+
   addJoiningAcknowledgement(doc, logo, employee, y);
 
-  // Page numbering and save
+  // --------------------------------------------------
+  // PAGE NUMBERING AND SAVE
+  // --------------------------------------------------
+
   drawFooter(doc);
 
   const filename =

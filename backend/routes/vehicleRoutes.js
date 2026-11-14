@@ -105,7 +105,7 @@ Router.get(
 );
 
 Router.get("/",authMiddleware,
-  permissionMiddleware("vehicles.view"), async (req, res) => {
+   async (req, res) => {
   try {
     const allVehicle = await Vehicle.find()
       .populate("inventoryItem", "name")
