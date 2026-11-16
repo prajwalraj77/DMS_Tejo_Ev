@@ -47,11 +47,30 @@ const PERMISSIONS = {
   EMPLOYEES_CREATE: "employees.create",
   EMPLOYEES_EDIT: "employees.edit",
   EMPLOYEES_DELETE: "employees.delete",
+
+  // Dealers
+  DEALERS_VIEW: "dealers.view",
+  DEALERS_CREATE: "dealers.create",
+  DEALERS_EDIT: "dealers.edit",
+  DEALERS_DELETE: "dealers.delete",
+
+  // Sub-Dealers
+  SUB_DEALERS_VIEW: "subDealers.view",
+  SUB_DEALERS_CREATE: "subDealers.create",
+  SUB_DEALERS_EDIT: "subDealers.edit",
+  SUB_DEALERS_DELETE: "subDealers.delete",
+
+  // Users
+  USERS_VIEW: "users.view",
+  USERS_CREATE: "users.create",
+  USERS_EDIT: "users.edit",
+  USERS_DELETE: "users.delete",
+  USERS_PERMISSIONS: "users.permissions",
 };
 
 const ALL_PERMISSIONS = Object.values(PERMISSIONS);
 
-module.exports = {
+export {
   PERMISSIONS,
   ALL_PERMISSIONS,
 };
