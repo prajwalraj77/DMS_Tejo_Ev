@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout.jsx";
 import Login from "./pages/Login.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import PermissionRoute from "./components/PermissionRoute.jsx";
 
 import StockUpload from "./pages/StockUpload.jsx";
 import TransferApprovals from "./pages/TransferApprovals.jsx";
@@ -28,7 +29,7 @@ function App() {
         {/* Public route */}
         <Route path="/login" element={<Login />} />
 
-        {/* Protected dashboard routes */}
+        {/* Authentication protection */}
         <Route element={<ProtectedRoute />}>
           <Route
             path="/"
@@ -36,29 +37,136 @@ function App() {
           />
 
           <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route path="stock/upload" element={<StockUpload />} />
-            <Route path="dealers" element={<DealerNetwork />} />
-            <Route path="stock/approvals" element={<TransferApprovals />} />
-            <Route path="stock/inventory" element={<StockInventory />} />
-            <Route path="dealers/create" element={<CreateDealer />} />
-            <Route path="dealers/:id/edit" element={<EditDealer />} />
-            <Route path="sub-dealers" element={<SubDealerNetwork />} />
-            <Route path="sub-dealers/create" element={<CreateSubDealer />} />
-            <Route path="sub-dealers/:id/edit" element={<EditSubDealer />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="users/create" element={<CreateUser />} />
-            <Route path="users/:id/edit" element={<EditUser />} />
-            <Route path="employees/create" element={<EmployeeForm />} />
-            <Route path="employees" element={<EmployeeDirectory />} />
-            <Route path="billing" element={<Billing />} />
-            <Route path="delivery" element={<Delivery />} />
-            <Route path="customers" element={<CustomerManagement />} />
+
+            {/* Stock */}
+            <Route element={<PermissionRoute permission="stockInwards.create" />}>
+              <Route path="stock/upload" element={<StockUpload />} />
+            </Route>
+
+            <Route element={<PermissionRoute permission="stockInwards.approve" />}>
+              <Route
+                path="stock/approvals"
+                element={<TransferApprovals />}
+              />
+            </Route>
+
+            <Route element={<PermissionRoute permission="inventory.view" />}>
+              <Route
+                path="stock/inventory"
+                element={<StockInventory />}
+              />
+            </Route>
+
+            {/* Dealers */}
+            <Route element={<PermissionRoute permission="dealers.view" />}>
+              <Route path="dealers" element={<DealerNetwork />} />
+            </Route>
+
+            <Route element={<PermissionRoute permission="dealers.create" />}>
+              <Route
+                path="dealers/create"
+                element={<CreateDealer />}
+              />
+            </Route>
+
+            <Route element={<PermissionRoute permission="dealers.edit" />}>
+              <Route
+                path="dealers/:id/edit"
+                element={<EditDealer />}
+              />
+            </Route>
+
+            {/* Sub Dealers */}
+            <Route element={<PermissionRoute permission="subDealers.view" />}>
+              <Route
+                path="sub-dealers"
+                element={<SubDealerNetwork />}
+              />
+            </Route>
+
+            <Route element={<PermissionRoute permission="subDealers.create" />}>
+              <Route
+                path="sub-dealers/create"
+                element={<CreateSubDealer />}
+              />
+            </Route>
+
+            <Route element={<PermissionRoute permission="subDealers.edit" />}>
+              <Route
+                path="sub-dealers/:id/edit"
+                element={<EditSubDealer />}
+              />
+            </Route>
+
+            {/* Users */}
+            <Route element={<PermissionRoute permission="users.view" />}>
+              <Route
+                path="users"
+                element={<UserManagement />}
+              />
+            </Route>
+
+            <Route element={<PermissionRoute permission="users.create" />}>
+              <Route
+                path="users/create"
+                element={<CreateUser />}
+              />
+            </Route>
+
+            <Route element={<PermissionRoute permission="users.edit" />}>
+              <Route
+                path="users/:id/edit"
+                element={<EditUser />}
+              />
+            </Route>
+
+            {/* Employees */}
+            <Route element={<PermissionRoute permission="employees.create" />}>
+              <Route
+                path="employees/create"
+                element={<EmployeeForm />}
+              />
+            </Route>
+
+            <Route element={<PermissionRoute permission="employees.view" />}>
+              <Route
+                path="employees"
+                element={<EmployeeDirectory />}
+              />
+            </Route>
+
+            {/* Billing */}
+            <Route element={<PermissionRoute permission="billing.view" />}>
+              <Route
+                path="billing"
+                element={<Billing />}
+              />
+            </Route>
+
+            {/* Delivery */}
+            <Route element={<PermissionRoute permission="deliveries.view" />}>
+              <Route
+                path="delivery"
+                element={<Delivery />}
+              />
+            </Route>
+
+            {/* Customers */}
+            <Route element={<PermissionRoute permission="customers.view" />}>
+              <Route
+                path="customers"
+                element={<CustomerManagement />}
+              />
+            </Route>
 
           </Route>
         </Route>
 
         {/* Unknown routes */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="*"
+          element={<Navigate to="/dashboard" replace />}
+        />
       </Routes>
     </BrowserRouter>
   );

@@ -7,6 +7,7 @@ import authorizeRoles from "../middleware/authorizeRoles.js";
 import mongoose from "mongoose";
 import { randomUUID } from "crypto";
 import { ALL_PERMISSIONS } from "../constants/permissions.js";
+import permissionMiddleware from "../middleware/permissionMiddleware.js";
 
 const Router = express.Router();
 
@@ -17,7 +18,7 @@ const Router = express.Router();
 |--------------------------------------------------------------------------
 */
 
-Router.post("/", authMiddleware, async (req, res) => {
+Router.post("/", authMiddleware,permissionMiddleware("users.create"), async (req, res) => {
   try {
     const {
       name,
@@ -378,7 +379,9 @@ Router.post("/login", async (
 Router.put(
   "/:id",
   authMiddleware,
+   
   authorizeRoles("ADMIN"),
+   permissionMiddleware("users.edit"),
   async (
     req,
     res
@@ -550,6 +553,7 @@ Router.patch(
   "/:id/status",
   authMiddleware,
   authorizeRoles("ADMIN"),
+  permissionMiddleware("users.edit"),
   async (
     req,
     res
@@ -710,6 +714,7 @@ Router.patch(
   "/:id/permissions",
   authMiddleware,
   authorizeRoles("ADMIN"),
+    permissionMiddleware("users.permissions"),
   async (
     req,
     res
@@ -869,6 +874,7 @@ Router.get(
   "/",
   authMiddleware,
   authorizeRoles("ADMIN"),
+  permissionMiddleware("users.view"),
   async (
     req,
     res
@@ -924,10 +930,11 @@ Router.patch(
   "/:id/reset-password",
   authMiddleware,
   authorizeRoles("ADMIN"),
+   permissionMiddleware("users.edit"),
   async (
     req,
     res
-  ) => {
+  ) => {x
 
     try {
 

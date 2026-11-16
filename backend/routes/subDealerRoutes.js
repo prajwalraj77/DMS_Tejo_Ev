@@ -6,11 +6,12 @@ import Dealer from "../models/Dealer.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import authorizeRoles from "../middleware/authorizeRoles.js";
 import Counter from "../models/Counter.js";
+import permissionMiddleware from "../middleware/permissionMiddleware.js";
 
 const Router = express.Router();
 
 
-Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
+Router.post("/", authMiddleware, permissionMiddleware("subDealers.create"), authorizeRoles("ADMIN"), async (req, res) => {
   const session = await mongoose.startSession();
 
   try {
@@ -175,7 +176,7 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
 });
 
 
-Router.get("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
+Router.get("/", authMiddleware, permissionMiddleware("subDealers.view"), authorizeRoles("ADMIN"), async (req, res) => {
   try {
     const { dealerId, status } = req.query;
     const filter = {};
@@ -225,6 +226,7 @@ Router.get("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
 Router.put(
   "/:id",
   authMiddleware,
+   permissionMiddleware("subDealers.edit"),
   authorizeRoles("ADMIN"),
   async (req, res) => {
     const session = await mongoose.startSession();
@@ -350,6 +352,7 @@ Router.put(
 
 Router.patch(
   "/:id/status",
+  permissionMiddleware("subDealers.edit"),
   authMiddleware,
   authorizeRoles("ADMIN"),
   async (req, res) => {
@@ -442,6 +445,7 @@ Router.patch(
 Router.get(
   "/summary",
   authMiddleware,
+   permissionMiddleware("subDealers.view"),
   authorizeRoles("ADMIN"),
   async (req, res) => {
     try {
@@ -526,6 +530,7 @@ Router.get(
 Router.get(
   "/:id",
   authMiddleware,
+  permissionMiddleware("subDealers.view"),
   authorizeRoles("ADMIN"),
   async (req, res) => {
     try {

@@ -5,13 +5,14 @@ import User from "../models/User.js";
 import Counter from "../models/Counter.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import authorizeRoles from "../middleware/authorizeRoles.js";
+import permissionMiddleware from "../middleware/permissionMiddleware.js";
 
 
 
 const Router = express.Router();
 
 
-Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
+Router.post("/", authMiddleware,permissionMiddleware("dealers.create"), authorizeRoles("ADMIN"), async (req, res) => {
   const session = await mongoose.startSession();
 
   try {
@@ -124,7 +125,7 @@ Router.post("/", authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
 });
 
 
-Router.get("/",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
+Router.get("/",authMiddleware, permissionMiddleware("dealers.view"), authorizeRoles("ADMIN"), async (req, res) => {
   try {
     const Alldealers = await Dealer.find({ isActive: true });
 
@@ -140,7 +141,7 @@ Router.get("/",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
   }
 });
 
-Router.put("/:id",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
+Router.put("/:id",authMiddleware,  permissionMiddleware("dealers.edit"), authorizeRoles("ADMIN"), async (req, res) => {
   const session = await mongoose.startSession();
 
   try {
@@ -254,7 +255,7 @@ Router.put("/:id",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
   }
 });
 
-Router.patch("/:id/status",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
+Router.patch("/:id/status",authMiddleware,  permissionMiddleware("dealers.edit"), authorizeRoles("ADMIN"), async (req, res) => {
   const session = await mongoose.startSession();
 
   try {
@@ -324,7 +325,7 @@ Router.patch("/:id/status",authMiddleware, authorizeRoles("ADMIN"), async (req, 
   }
 });
 
-Router.get("/all",authMiddleware, authorizeRoles("ADMIN"), async (req, res) => {
+Router.get("/all",authMiddleware,permissionMiddleware("dealers.view"), authorizeRoles("ADMIN"), async (req, res) => {
   try {
     const { status } = req.query;
     
