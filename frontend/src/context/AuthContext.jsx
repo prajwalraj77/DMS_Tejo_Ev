@@ -1,10 +1,10 @@
-
 import {
   createContext,
   useContext,
   useEffect,
   useState,
 } from "react";
+import { hasPermission } from "../utils/permissions.js";
 
 import { io } from "socket.io-client";
 import api from "../services/api.js";
@@ -20,6 +20,17 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => {
     return localStorage.getItem("tejo_token") || null;
   });
+
+  /*
+   * Permission helper used throughout the frontend.
+   *
+   * Example:
+   * const { can } = useAuth();
+   * can("vehicles.view")
+   */
+  const can = (permission) => {
+    return hasPermission(user, permission);
+  };
 
   // Connect authenticated users to Socket.IO.
   useEffect(() => {
@@ -118,6 +129,7 @@ export function AuthProvider({ children }) {
         token,
         login,
         logout,
+        can,
         isAuthenticated: Boolean(token && user),
       }}
     >

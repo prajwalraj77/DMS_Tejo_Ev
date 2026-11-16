@@ -23,7 +23,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 function Sidebar() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, can } = useAuth();
 
   const [dealersOpen, setDealersOpen] = useState(true);
   const [stockOpen, setStockOpen] = useState(true);
@@ -84,72 +84,77 @@ function Sidebar() {
           Dashboard
         </Link>
 
-        {/* Sales */}
-       {/* Customers */}
-<Link
-  to="/dashboard/customers"
-  className={`group mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
-    isActive("/dashboard/customers")
-      ? "bg-[#b8f34a] font-semibold text-[#111615]"
-      : "text-white/55 hover:bg-white/[0.04] hover:text-white"
-  }`}
->
-  <UsersRound
-    size={17}
-    strokeWidth={1.7}
-    className={
-      isActive("/dashboard/customers")
-        ? "text-[#111615]"
-        : "text-white/40 group-hover:text-[#b8f34a]"
-    }
-  />
+        {/* Customers */}
+        {can("customers.view") && (
+          <Link
+            to="/dashboard/customers"
+            className={`group mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
+              isActive("/dashboard/customers")
+                ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <UsersRound
+              size={17}
+              strokeWidth={1.7}
+              className={
+                isActive("/dashboard/customers")
+                  ? "text-[#111615]"
+                  : "text-white/40 group-hover:text-[#b8f34a]"
+              }
+            />
 
-  <span>Customers</span>
-</Link>
+            <span>Customers</span>
+          </Link>
+        )}
 
-{/* Sales */}
-<Link
-  to="/dashboard/billing"
-  className={`group mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
-    isActive("/dashboard/billing")
-      ? "bg-[#b8f34a] font-semibold text-[#111615]"
-      : "text-white/55 hover:bg-white/[0.04] hover:text-white"
-  }`}
->
-  <ReceiptText
-    size={17}
-    strokeWidth={1.7}
-    className={
-      isActive("/dashboard/billing")
-        ? "text-[#111615]"
-        : "text-white/40 group-hover:text-[#b8f34a]"
-    }
-  />
+        {/* Sales & Billing */}
+        {can("billing.view") && (
+          <Link
+            to="/dashboard/billing"
+            className={`group mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
+              isActive("/dashboard/billing")
+                ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <ReceiptText
+              size={17}
+              strokeWidth={1.7}
+              className={
+                isActive("/dashboard/billing")
+                  ? "text-[#111615]"
+                  : "text-white/40 group-hover:text-[#b8f34a]"
+              }
+            />
 
-  <span>Sales & Billing</span>
-</Link>
+            <span>Sales & Billing</span>
+          </Link>
+        )}
 
-        {/* Delivery */}
-        <Link
-          to="/dashboard/delivery"
-          className={`group mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
-            isActive("/dashboard/delivery")
-              ? "bg-[#b8f34a] font-semibold text-[#111615]"
-              : "text-white/55 hover:bg-white/[0.04] hover:text-white"
-          }`}
-        >
-          <Truck
-            size={17}
-            strokeWidth={1.7}
-            className={
+        {/* Vehicle Delivery */}
+        {can("deliveries.view") && (
+          <Link
+            to="/dashboard/delivery"
+            className={`group mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
               isActive("/dashboard/delivery")
-                ? "text-[#111615]"
-                : "text-white/40 group-hover:text-[#b8f34a]"
-            }
-          />
+                ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
+            <Truck
+              size={17}
+              strokeWidth={1.7}
+              className={
+                isActive("/dashboard/delivery")
+                  ? "text-[#111615]"
+                  : "text-white/40 group-hover:text-[#b8f34a]"
+              }
+            />
 
-          <span>Vehicle Delivery</span>
-        </Link>
+            <span>Vehicle Delivery</span>
+          </Link>
+        )}
 
         {/* Dealers / Network */}
         <div className="mt-6">
@@ -186,60 +191,68 @@ function Sidebar() {
             <div className="ml-5 mt-1 border-l border-white/10 pl-3">
 
               {/* Create Dealer */}
-              <Link
-                to="/dashboard/dealers/create"
-                className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
-                  isActive("/dashboard/dealers/create")
-                    ? "bg-[#b8f34a] font-semibold text-[#111615]"
-                    : "text-white/40 hover:bg-white/[0.04] hover:text-white"
-                }`}
-              >
-                <Building2 size={14} />
+              {user?.role === "ADMIN" && (
+                <Link
+                  to="/dashboard/dealers/create"
+                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
+                    isActive("/dashboard/dealers/create")
+                      ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                      : "text-white/40 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                >
+                  <Building2 size={14} />
 
-                Create Dealer / Franchise
-              </Link>
+                  Create Dealer / Franchise
+                </Link>
+              )}
 
               {/* Dealer Network */}
-              <Link
-                to="/dashboard/dealers"
-                className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
-                  isActive("/dashboard/dealers")
-                    ? "bg-[#b8f34a] font-semibold text-[#111615]"
-                    : "text-white/40 hover:bg-white/[0.04] hover:text-white"
-                }`}
-              >
-                <Network size={14} />
+              {user?.role === "ADMIN" && (
+                <Link
+                  to="/dashboard/dealers"
+                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
+                    isActive("/dashboard/dealers")
+                      ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                      : "text-white/40 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                >
+                  <Network size={14} />
 
-                Dealer Network
-              </Link>
+                  Dealer Network
+                </Link>
+              )}
 
               {/* Sub Dealer Network */}
-              <Link
-                to="/dashboard/sub-dealers"
-                className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
-                  isActive("/dashboard/sub-dealers")
-                    ? "bg-[#b8f34a] font-semibold text-[#111615]"
-                    : "text-white/40 hover:bg-white/[0.04] hover:text-white"
-                }`}
-              >
-                <Store size={14} />
+              {user?.role === "ADMIN" && (
+                <Link
+                  to="/dashboard/sub-dealers"
+                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
+                    isActive("/dashboard/sub-dealers")
+                      ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                      : "text-white/40 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                >
+                  <Store size={14} />
 
-                Sub-Dealer Network
-              </Link>
+                  Sub-Dealer Network
+                </Link>
+              )}
 
               {/* Create Sub Dealer */}
-              <Link
-                to="/dashboard/sub-dealers/create"
-                className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
-                  isActive("/dashboard/sub-dealers/create")
-                    ? "bg-[#b8f34a] font-semibold text-[#111615]"
-                    : "text-white/40 hover:bg-white/[0.04] hover:text-white"
-                }`}
-              >
-                <Store size={14} />
+              {user?.role === "ADMIN" && (
+                <Link
+                  to="/dashboard/sub-dealers/create"
+                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
+                    isActive("/dashboard/sub-dealers/create")
+                      ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                      : "text-white/40 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                >
+                  <Store size={14} />
 
-                Create Sub-Dealer
-              </Link>
+                  Create Sub-Dealer
+                </Link>
+              )}
 
               {/* Users - ADMIN ONLY */}
               {user?.role === "ADMIN" && (
@@ -296,53 +309,59 @@ function Sidebar() {
             <div className="ml-5 mt-1 border-l border-white/10 pl-3">
 
               {/* Stock Upload */}
-              <Link
-                to="/dashboard/stock/upload"
-                className={`group flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
-                  isActive("/dashboard/stock/upload")
-                    ? "bg-[#b8f34a] font-semibold text-[#111615]"
-                    : "text-white/40 hover:bg-white/[0.04] hover:text-white"
-                }`}
-              >
-                <Upload size={14} />
+              {can("stockInwards.create") && (
+                <Link
+                  to="/dashboard/stock/upload"
+                  className={`group flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
+                    isActive("/dashboard/stock/upload")
+                      ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                      : "text-white/40 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                >
+                  <Upload size={14} />
 
-                Stock Upload / Inward
-              </Link>
+                  Stock Upload / Inward
+                </Link>
+              )}
 
               {/* Transfer Approvals */}
-              <Link
-                to="/dashboard/stock/approvals"
-                className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
-                  isActive("/dashboard/stock/approvals")
-                    ? "bg-[#b8f34a] font-semibold text-[#111615]"
-                    : "text-white/40 hover:bg-white/[0.04] hover:text-white"
-                }`}
-              >
-                <ClipboardCheck size={14} />
+              {can("stockInwards.approve") && (
+                <Link
+                  to="/dashboard/stock/approvals"
+                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
+                    isActive("/dashboard/stock/approvals")
+                      ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                      : "text-white/40 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                >
+                  <ClipboardCheck size={14} />
 
-                Transfer Approvals
-              </Link>
+                  Transfer Approvals
+                </Link>
+              )}
 
               {/* Stock Inventory */}
-              <Link
-                to="/dashboard/stock/inventory"
-                className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
-                  isActive("/dashboard/stock/inventory")
-                    ? "bg-[#b8f34a] font-semibold text-[#111615]"
-                    : "text-white/40 hover:bg-white/[0.04] hover:text-white"
-                }`}
-              >
-                <Boxes size={14} />
+              {can("inventory.view") && (
+                <Link
+                  to="/dashboard/stock/inventory"
+                  className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
+                    isActive("/dashboard/stock/inventory")
+                      ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                      : "text-white/40 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                >
+                  <Boxes size={14} />
 
-                Stock Inventory
-              </Link>
+                  Stock Inventory
+                </Link>
+              )}
 
             </div>
           )}
         </div>
 
-        {/* HR - ADMIN ONLY */}
-        {user?.role === "ADMIN" && (
+        {/* HR */}
+        {can("employees.view") && (
           <div className="mt-6">
 
             <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/25">
@@ -372,26 +391,28 @@ function Sidebar() {
             </Link>
 
             {/* Create Employee */}
-            <Link
-              to="/dashboard/employees/create"
-              className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
-                isActive("/dashboard/employees/create")
-                  ? "bg-[#b8f34a] font-semibold text-[#111615]"
-                  : "text-white/55 hover:bg-white/[0.04] hover:text-white"
-              }`}
-            >
-              <UserRoundCog
-                size={17}
-                strokeWidth={1.7}
-                className={
+            {can("employees.create") && (
+              <Link
+                to="/dashboard/employees/create"
+                className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] transition-all ${
                   isActive("/dashboard/employees/create")
-                    ? "text-[#111615]"
-                    : "text-white/40 group-hover:text-[#b8f34a]"
-                }
-              />
+                    ? "bg-[#b8f34a] font-semibold text-[#111615]"
+                    : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+                }`}
+              >
+                <UserRoundCog
+                  size={17}
+                  strokeWidth={1.7}
+                  className={
+                    isActive("/dashboard/employees/create")
+                      ? "text-[#111615]"
+                      : "text-white/40 group-hover:text-[#b8f34a]"
+                  }
+                />
 
-              <span>Create Employee</span>
-            </Link>
+                <span>Create Employee</span>
+              </Link>
+            )}
 
           </div>
         )}
@@ -403,13 +424,17 @@ function Sidebar() {
             System
           </p>
 
+          {/* Administration is still an informational UI item */}
           <div className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-white/50 transition hover:bg-white/[0.04] hover:text-white">
 
             <Settings size={17} strokeWidth={1.7} />
 
             <span>Administration</span>
 
-            <ChevronRight size={14} className="ml-auto text-white/25" />
+            <ChevronRight
+              size={14}
+              className="ml-auto text-white/25"
+            />
 
           </div>
 
