@@ -191,7 +191,7 @@ function Sidebar() {
             <div className="ml-5 mt-1 border-l border-white/10 pl-3">
 
               {/* Create Dealer */}
-              {user?.role === "ADMIN" && (
+              {can("dealers.create") && (
                 <Link
                   to="/dashboard/dealers/create"
                   className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
@@ -207,7 +207,7 @@ function Sidebar() {
               )}
 
               {/* Dealer Network */}
-              {user?.role === "ADMIN" && (
+              {can("dealers.view") && (
                 <Link
                   to="/dashboard/dealers"
                   className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
@@ -223,7 +223,7 @@ function Sidebar() {
               )}
 
               {/* Sub Dealer Network */}
-              {user?.role === "ADMIN" && (
+              {can("subDealers.view") && (
                 <Link
                   to="/dashboard/sub-dealers"
                   className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
@@ -239,7 +239,7 @@ function Sidebar() {
               )}
 
               {/* Create Sub Dealer */}
-              {user?.role === "ADMIN" && (
+              {can("subDealers.create") && (
                 <Link
                   to="/dashboard/sub-dealers/create"
                   className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
@@ -254,8 +254,8 @@ function Sidebar() {
                 </Link>
               )}
 
-              {/* Users - ADMIN ONLY */}
-              {user?.role === "ADMIN" && (
+              {/* Users */}
+              {can("users.view") && (
                 <Link
                   to="/dashboard/users"
                   className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-[12px] transition-all ${
