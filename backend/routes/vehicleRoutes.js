@@ -1,71 +1,85 @@
 import express from "express";
 const Router = express.Router();
+
 import Vehicle from "../models/Vehicle.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import permissionMiddleware from "../middleware/permissionMiddleware.js";
 
-Router.post("/",authMiddleware,
-  permissionMiddleware("vehicles.create"), async (req, res) => {
-  try {
-    const {
-      gstRate,
-      inventoryItem,
-      stockOwner,
-      allocatedToType,
-      allocatedToId,
-      status,
-      model,
-      batteryVariant,
-      chassisNumber,
-      colour,
-      motorNumber,
-      controllerNumber,
-      batteryNumber,
-      chargerNumber,
-    } = req.body;
 
-    const newVehicle = await Vehicle.create({
-      gstRate,
-      inventoryItem,
-      stockOwner,
-      allocatedToType,
-      allocatedToId,
-      status,
-      model,
-      batteryVariant,
-      chassisNumber,
-      colour,
-      motorNumber,
-      controllerNumber,
-      batteryNumber,
-      chargerNumber,
-    });
+// ======================================================
+// CREATE VEHICLE
+// ======================================================
 
-    res.status(200).json({
-      message: "Vehicle created",
-      newVehicle,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to create Vehicle",
-      error: error.message,
-    });
-  }
-});
+Router.post(
+  "/",
+  authMiddleware,
+  permissionMiddleware("vehicles.create"),
+  async (req, res) => {
+    try {
+      const {
+        gstRate,
+        inventoryItem,
+        stockOwner,
+        allocatedToType,
+        allocatedToId,
+        status,
+        model,
+        batteryVariant,
+        chassisNumber,
+        colour,
+        motorNumber,
+        controllerNumber,
+        batteryNumber,
+        chargerNumber,
+      } = req.body;
 
-// ============================================
+      const newVehicle = await Vehicle.create({
+        gstRate,
+        inventoryItem,
+        stockOwner,
+        allocatedToType,
+        allocatedToId,
+        status,
+        model,
+        batteryVariant,
+        chassisNumber,
+        colour,
+        motorNumber,
+        controllerNumber,
+        batteryNumber,
+        chargerNumber,
+      });
+
+      return res.status(200).json({
+        message: "Vehicle created",
+        newVehicle,
+      });
+    } catch (error) {
+      console.error("Error creating Vehicle:", error);
+
+      return res.status(500).json({
+        message: "Failed to create Vehicle",
+        error: error.message,
+      });
+    }
+  },
+);
+
+
+// ======================================================
 // DEALER PENDING ACCEPTANCE
-// ============================================
+// ======================================================
 
 Router.get(
   "/dealer/pending-acceptance",
   authMiddleware,
+  permissionMiddleware("vehicles.view"),
   async (req, res) => {
     try {
-      // Only DEALER users can access this API
+      // Only DEALER users can access this API.
       if (req.user.role !== "DEALER") {
         return res.status(403).json({
-          message: "Only dealers can view pending vehicle acceptance."
+          message: "Only dealers can view pending vehicle acceptance.",
         });
       }
 
@@ -75,14 +89,14 @@ Router.get(
 
       if (!dealerId) {
         return res.status(400).json({
-          message: "Dealer account is not properly linked."
+          message: "Dealer account is not properly linked.",
         });
       }
 
       const vehicles = await Vehicle.find({
         allocatedToType: "DEALER",
         allocatedToId: dealerId,
-        status: "PENDING_DEALER_ACCEPTANCE"
+        status: "PENDING_DEALER_ACCEPTANCE",
       })
         .populate("inventoryItem")
         .populate("model")
@@ -92,52 +106,74 @@ Router.get(
       return res.status(200).json({
         success: true,
         count: vehicles.length,
-        vehicles
+        vehicles,
       });
     } catch (error) {
-      console.error("Error fetching pending dealer vehicles:", error);
+      console.error(
+        "Error fetching pending dealer vehicles:",
+        error,
+      );
 
       return res.status(500).json({
-        message: "Failed to fetch pending dealer vehicles."
+        message: "Failed to fetch pending dealer vehicles.",
       });
     }
-  }
+  },
 );
 
-Router.get("/",authMiddleware,
-   async (req, res) => {
-  try {
-    const allVehicle = await Vehicle.find()
-      .populate("inventoryItem", "name")
-      .populate("model", "name")
-      .populate("batteryVariant", "name power range warrantyYears warrantyKm")
-      .populate("allocatedToId", "businessName dealerCode")
 
-    res.status(200).json({
-      message: "All Vehicle list",
-      allVehicle,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to Get all Vehicle",
-      error: error.message,
-    });
-  }
-});
+// ======================================================
+// GET ALL VEHICLES / INVENTORY
+// ======================================================
 
-// ============================================
+Router.get(
+  "/",
+  authMiddleware,
+  permissionMiddleware("inventory.view"),
+  async (req, res) => {
+    try {
+      const allVehicle = await Vehicle.find()
+        .populate("inventoryItem", "name")
+        .populate("model", "name")
+        .populate(
+          "batteryVariant",
+          "name power range warrantyYears warrantyKm",
+        )
+        .populate(
+          "allocatedToId",
+          "businessName dealerCode",
+        );
+
+      return res.status(200).json({
+        message: "All Vehicle list",
+        allVehicle,
+      });
+    } catch (error) {
+      console.error("Error fetching vehicles:", error);
+
+      return res.status(500).json({
+        message: "Failed to Get all Vehicle",
+        error: error.message,
+      });
+    }
+  },
+);
+
+
+// ======================================================
 // DEALER ACCEPT VEHICLE
-// ============================================
+// ======================================================
 
 Router.patch(
   "/:id/accept",
   authMiddleware,
+  permissionMiddleware("vehicles.edit"),
   async (req, res) => {
     try {
-      // Only DEALER users can accept dealer stock
+      // Only DEALER users can accept dealer stock.
       if (req.user.role !== "DEALER") {
         return res.status(403).json({
-          message: "Only dealers can accept vehicles."
+          message: "Only dealers can accept vehicles.",
         });
       }
 
@@ -145,7 +181,7 @@ Router.patch(
 
       if (!dealerId) {
         return res.status(400).json({
-          message: "Dealer account is not properly linked."
+          message: "Dealer account is not properly linked.",
         });
       }
 
@@ -153,7 +189,7 @@ Router.patch(
 
       if (!vehicle) {
         return res.status(404).json({
-          message: "Vehicle not found."
+          message: "Vehicle not found.",
         });
       }
 
@@ -164,18 +200,20 @@ Router.patch(
         String(vehicle.allocatedToId) !== String(dealerId)
       ) {
         return res.status(403).json({
-          message: "This vehicle is not assigned to your dealer."
+          message: "This vehicle is not assigned to your dealer.",
         });
       }
 
-      // Prevent accepting an already accepted vehicle
-      if (vehicle.status !== "PENDING_DEALER_ACCEPTANCE") {
+      // Prevent accepting an already accepted vehicle.
+      if (
+        vehicle.status !== "PENDING_DEALER_ACCEPTANCE"
+      ) {
         return res.status(400).json({
-          message: `Vehicle cannot be accepted because its current status is ${vehicle.status}.`
+          message: `Vehicle cannot be accepted because its current status is ${vehicle.status}.`,
         });
       }
 
-      // Accept the vehicle
+      // Accept the vehicle.
       vehicle.status = "ALLOCATED";
 
       await vehicle.save();
@@ -183,16 +221,20 @@ Router.patch(
       return res.status(200).json({
         success: true,
         message: "Vehicle accepted successfully.",
-        vehicle
+        vehicle,
       });
     } catch (error) {
-      console.error("Error accepting vehicle:", error);
+      console.error(
+        "Error accepting vehicle:",
+        error,
+      );
 
       return res.status(500).json({
-        message: "Failed to accept vehicle."
+        message: "Failed to accept vehicle.",
       });
     }
-  }
+  },
 );
+
 
 export default Router;
